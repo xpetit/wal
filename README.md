@@ -4,7 +4,7 @@
 git clone https://github.com/xpetit/wal
 cd wal
 docker build --tag github.com/xpetit/wal .
-docker run --rm --name github.com/xpetit/wal github.com/xpetit/wal
+docker run --rm --name wal github.com/xpetit/wal
 ```
 
 Output:
