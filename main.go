@@ -35,12 +35,12 @@ func main() {
 	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		tx, err := db.Begin()
 		check(err)
-		result, err := tx.Exec(`update "tb" set "count" = "count" + 1 where "id" = ?`, 1)
+		result, err := tx.Exec(`update "tb" set "count" = "count" + 1 where "id" = 1`)
 		check(err)
 		nb, err := result.RowsAffected()
 		check(err)
 		if nb == 0 {
-			check(tx.Exec(`insert into "tb" ("id", "count") values (?, 1)`, 1))
+			check(tx.Exec(`insert into "tb" ("id", "count") values (1, 1)`))
 		}
 		check(tx.Commit())
 	})
