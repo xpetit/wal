@@ -25,7 +25,7 @@ RUN go build -ldflags "-s -w" -o main .
 
 FROM alpine
 
-RUN apk add --no-cache wrk sqlite
+RUN apk add --no-cache wrk sqlite curl
 
 # Create unprivileged user for the service
 # -D: Don't assign a password
