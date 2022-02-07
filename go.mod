@@ -1,4 +1,4 @@
-module github.com/xpetit/fizzbuzz/v5
+module github.com/xpetit/wal
 
 go 1.17
 
