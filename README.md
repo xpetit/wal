@@ -20,7 +20,6 @@ WAL file size: 209 MB
 WAL file size: 279 MB
 [...]
 WAL file size: 350 MB
-[...]
 ```
 
 Uncommenting `db.SetMaxOpenConns(1)` in [main.go](main.go) fixes the issue, changing `--connections 2` to `--connections 1` in [script.sh](script.sh) as well.
