@@ -8,6 +8,7 @@ docker run --rm --name github.com/xpetit/wal github.com/xpetit/wal
 ```
 
 Output:
+
 ```
 [...]
 WAL file size: 71 MB
