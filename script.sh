@@ -3,7 +3,10 @@
 set -eu
 
 ./main &
-
+sleep 3
+openrc
+sleep 3
+litestream replicate data.db sftp://root:@localhost:22/replication &
 sleep 3
 
 for _ in $(seq 1 5); do

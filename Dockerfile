@@ -1,5 +1,4 @@
 # syntax=docker/dockerfile:1
-
 # For more information, please visit: https://docs.docker.com/language/golang/build-images
 
 # Leverage multi-stage build to reduce the final Docker image size
@@ -14,29 +13,28 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY .build .build
-RUN go build ./.build
-
 # Build program
-COPY main.go .
-# -ldflags "-s -w" reduces the binary size (-s: disable symbol table, -w: disable DWARF generation)
-RUN go build -ldflags "-s -w" -o main .
+COPY *.go ./
+RUN --mount=type=cache,target=/root/.cache/go-build \
+	--mount=type=cache,target=/go/pkg \
+	go build -ldflags '-s -w -extldflags "-static"' -o main .
 
 
 FROM alpine
 
-RUN apk add --no-cache wrk sqlite curl
+ADD https://github.com/benbjohnson/litestream/releases/download/v0.3.7/litestream-v0.3.7-linux-amd64-static.tar.gz /tmp/
+RUN tar -C /usr/local/bin -xf /tmp/litestream-v0.3.7-linux-amd64-static.tar.gz
+RUN rm /tmp/litestream-v0.3.7-linux-amd64-static.tar.gz
 
-# Create unprivileged user for the service
-# -D: Don't assign a password
-RUN adduser -D user
-USER user:user
+RUN apk add --no-cache wrk sqlite curl openssh-server openssh-sftp-server openrc
 
-WORKDIR /home/user
+RUN passwd -d root
+RUN rc-update add sshd
+RUN mkdir -p /run/openrc/softlevel
+RUN echo 'PermitEmptyPasswords yes' >> /etc/ssh/sshd_config
+RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
 
 COPY script.sh .
-
-# Copy binary
 COPY --from=builder /app/main .
 
-CMD ["sh", "/home/user/script.sh"]
+CMD ["sh", "script.sh"]
