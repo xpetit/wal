@@ -3,8 +3,12 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
+	"runtime"
+	"sync"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -25,22 +29,27 @@ func main() {
 	}.Encode())
 	check(err)
 
-	// db.SetMaxOpenConns(1) // this fixes the issue
+	db.SetMaxOpenConns(runtime.NumCPU())
 
 	check(db.Exec(`create table if not exists "tb" (
 		"id"    integer not null primary key,
 		"count" integer not null
 	)`))
 
+	rand.Seed(time.Now().UnixNano())
+	var m sync.Mutex
 	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
+		m.Lock()
+		id := rand.Intn(1_000_000)
+		m.Unlock()
 		tx, err := db.Begin()
 		check(err)
-		result, err := tx.Exec(`update "tb" set "count" = "count" + 1 where "id" = 1`)
+		result, err := tx.Exec(`update "tb" set "count" = "count" + 1 where "id" = ?`, id)
 		check(err)
 		nb, err := result.RowsAffected()
 		check(err)
 		if nb == 0 {
-			check(tx.Exec(`insert into "tb" ("id", "count") values (1, 1)`))
+			check(tx.Exec(`insert into "tb" ("id", "count") values (?, 1)`, id))
 		}
 		check(tx.Commit())
 	})
